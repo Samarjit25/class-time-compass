@@ -56,6 +56,7 @@ const AddClass = () => {
         endTime,
         location,
         notes,
+        status: 'scheduled', // Add the missing status property
       });
       
       toast({

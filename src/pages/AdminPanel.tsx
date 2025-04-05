@@ -55,7 +55,8 @@ const AdminPanel = () => {
       case 'canceled':
         return <Badge variant="destructive" className="ml-2">Canceled</Badge>;
       case 'rescheduled':
-        return <Badge variant="warning" className="ml-2 bg-yellow-500">Rescheduled</Badge>;
+        // Fixed: Changed warning to outline and added custom styling
+        return <Badge variant="outline" className="ml-2 bg-yellow-500 text-white">Rescheduled</Badge>;
       default:
         return <Badge variant="outline" className="ml-2">Scheduled</Badge>;
     }
