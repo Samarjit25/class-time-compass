@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClassEntry, Day, dayOrder } from '@/lib/types';
-import { Clock, MapPin, Trash2 } from 'lucide-react';
+import { AlertCircle, Clock, MapPin, Trash2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,11 +20,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Schedule = () => {
   const { getClassesByDay, deleteClass } = useTimetable();
   const navigate = useNavigate();
   const [classToDelete, setClassToDelete] = useState<ClassEntry | null>(null);
+  const { isProfessor } = useAuth();
   
   // Get today's day name
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as Day;
@@ -32,6 +35,19 @@ const Schedule = () => {
     if (classToDelete) {
       deleteClass(classToDelete.id);
       setClassToDelete(null);
+    }
+  };
+
+  const getStatusBadge = (status: ClassEntry['status']) => {
+    if (!status || status === 'scheduled') return null;
+    
+    switch(status) {
+      case 'canceled':
+        return <Badge variant="destructive" className="ml-2">Canceled</Badge>;
+      case 'rescheduled':
+        return <Badge variant="warning" className="ml-2 bg-yellow-500">Rescheduled</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -45,9 +61,16 @@ const Schedule = () => {
               View your classes for the entire week
             </p>
           </div>
-          <Button onClick={() => navigate('/add-class')}>
-            Add New Class
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/add-class')}>
+              Add New Class
+            </Button>
+            {isProfessor && (
+              <Button variant="outline" onClick={() => navigate('/admin')}>
+                Professor Dashboard
+              </Button>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue={today.toLowerCase()}>
@@ -81,9 +104,15 @@ const Schedule = () => {
                     {dayClasses.length > 0 ? (
                       <div className="space-y-4">
                         {dayClasses.map((cls) => (
-                          <div key={cls.id} className="border rounded-md p-4">
+                          <div 
+                            key={cls.id} 
+                            className={`border rounded-md p-4 ${cls.status === 'canceled' ? 'bg-red-50 border-red-200 dark:bg-red-900/10' : ''}`}
+                          >
                             <div className="flex items-center justify-between">
-                              <h3 className="font-medium text-lg">{cls.subject}</h3>
+                              <h3 className="font-medium text-lg flex items-center">
+                                {cls.subject}
+                                {getStatusBadge(cls.status)}
+                              </h3>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
@@ -125,6 +154,12 @@ const Schedule = () => {
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <MapPin className="h-4 w-4" />
                                   <span>{cls.location}</span>
+                                </div>
+                              )}
+                              {cls.status === 'canceled' && (
+                                <div className="flex items-center gap-2 text-red-600 mt-1">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <span>This class has been canceled</span>
                                 </div>
                               )}
                               {cls.notes && (

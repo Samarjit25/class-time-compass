@@ -5,10 +5,11 @@ import { User } from '@/lib/types';
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, classCode?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, classCode?: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  isProfessor: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => {},
   logout: () => {},
   isLoading: true,
+  isProfessor: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -40,18 +42,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // Mock login function - in a real app would call an API
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, classCode?: string) => {
     try {
       // In a real app, validate with backend
       if (password.length < 6) {
         throw new Error("Invalid credentials");
       }
       
+      // Determine role based on class code
+      const role = classCode ? 'professor' : 'student';
+      
       // Mock user
       const newUser: User = {
         id: Math.random().toString(36).slice(2),
         email,
         name: email.split('@')[0],
+        role,
+        classCode,
       };
       
       localStorage.setItem('user', JSON.stringify(newUser));
@@ -62,18 +69,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Mock register function
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, classCode?: string) => {
     try {
       // In a real app, would send to backend
       if (password.length < 6) {
         throw new Error("Password must be at least 6 characters");
       }
       
+      // Determine role based on class code
+      const role = classCode ? 'professor' : 'student';
+      
       // Mock user creation
       const newUser: User = {
         id: Math.random().toString(36).slice(2),
         email,
         name,
+        role,
+        classCode,
       };
       
       localStorage.setItem('user', JSON.stringify(newUser));
@@ -96,7 +108,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         login,
         register,
         logout,
-        isLoading
+        isLoading,
+        isProfessor: user?.role === 'professor' || false
       }}
     >
       {children}

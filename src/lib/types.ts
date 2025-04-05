@@ -5,6 +5,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  role: 'student' | 'professor';
+  classCode?: string;
 }
 
 export interface ClassEntry {
@@ -15,7 +17,11 @@ export interface ClassEntry {
   endTime: string;
   location?: string;
   notes?: string;
+  status: ClassStatus;
+  classCode?: string;
 }
+
+export type ClassStatus = 'scheduled' | 'canceled' | 'rescheduled';
 
 export type Day = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 

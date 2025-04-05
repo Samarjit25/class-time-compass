@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ClassEntry, Day, dayOrder } from '@/lib/types';
+import { ClassEntry, Day, dayOrder, ClassStatus } from '@/lib/types';
 import { useAuth } from './AuthContext';
 
 interface TimetableContextType {
@@ -9,6 +9,8 @@ interface TimetableContextType {
   updateClass: (id: string, classEntry: Partial<ClassEntry>) => void;
   deleteClass: (id: string) => void;
   getClassesByDay: (day: Day) => ClassEntry[];
+  getClassesByCode: (classCode: string) => ClassEntry[];
+  updateClassStatus: (id: string, status: ClassStatus) => void;
 }
 
 const TimetableContext = createContext<TimetableContextType>({
@@ -17,6 +19,8 @@ const TimetableContext = createContext<TimetableContextType>({
   updateClass: () => {},
   deleteClass: () => {},
   getClassesByDay: () => [],
+  getClassesByCode: () => [],
+  updateClassStatus: () => {},
 });
 
 export const useTimetable = () => useContext(TimetableContext);
@@ -30,20 +34,15 @@ export const TimetableProvider = ({ children }: TimetableProviderProps) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      const savedClasses = localStorage.getItem(`timetable-${user.id}`);
-      if (savedClasses) {
-        setClasses(JSON.parse(savedClasses));
-      }
-    } else {
-      setClasses([]);
+    // Load all class data regardless of user type
+    const savedClasses = localStorage.getItem('timetable-classes');
+    if (savedClasses) {
+      setClasses(JSON.parse(savedClasses));
     }
   }, [user]);
 
   const saveClasses = (updatedClasses: ClassEntry[]) => {
-    if (user) {
-      localStorage.setItem(`timetable-${user.id}`, JSON.stringify(updatedClasses));
-    }
+    localStorage.setItem('timetable-classes', JSON.stringify(updatedClasses));
   };
 
   const addClass = (classEntry: Omit<ClassEntry, 'id'>) => {
@@ -72,12 +71,27 @@ export const TimetableProvider = ({ children }: TimetableProviderProps) => {
   };
 
   const getClassesByDay = (day: Day) => {
-    return classes
+    let filteredClasses = classes;
+    
+    // If user is a student, only show classes without a class code or with same class code
+    if (user?.role === 'student') {
+      filteredClasses = classes.filter(c => !c.classCode || c.classCode === user?.classCode);
+    }
+    
+    return filteredClasses
       .filter(c => c.day === day)
       .sort((a, b) => {
         // Sort by time
         return a.startTime.localeCompare(b.startTime);
       });
+  };
+  
+  const getClassesByCode = (classCode: string) => {
+    return classes.filter(c => c.classCode === classCode);
+  };
+  
+  const updateClassStatus = (id: string, status: ClassStatus) => {
+    updateClass(id, { status });
   };
 
   return (
@@ -88,6 +102,8 @@ export const TimetableProvider = ({ children }: TimetableProviderProps) => {
         updateClass,
         deleteClass,
         getClassesByDay,
+        getClassesByCode,
+        updateClassStatus
       }}
     >
       {children}

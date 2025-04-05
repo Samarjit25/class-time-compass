@@ -7,11 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, School } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [classCode, setClassCode] = useState('');
+  const [isProfessor, setIsProfessor] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -21,7 +24,7 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      await login(email, password, isProfessor ? classCode : undefined);
       toast({
         title: "Success!",
         description: "You have successfully logged in.",
@@ -83,6 +86,32 @@ const Login = () => {
                   required
                 />
               </div>
+              
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch 
+                  id="professor-mode" 
+                  checked={isProfessor}
+                  onCheckedChange={setIsProfessor}
+                />
+                <Label htmlFor="professor-mode" className="flex items-center gap-2">
+                  <School className="h-4 w-4" />
+                  I am a professor
+                </Label>
+              </div>
+              
+              {isProfessor && (
+                <div className="space-y-2">
+                  <Label htmlFor="classCode">Class Code</Label>
+                  <Input 
+                    id="classCode"
+                    type="text" 
+                    value={classCode} 
+                    onChange={(e) => setClassCode(e.target.value)}
+                    placeholder="Enter your class code" 
+                    required={isProfessor}
+                  />
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button 
