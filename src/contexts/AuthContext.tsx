@@ -5,8 +5,9 @@ import { User } from '@/lib/types';
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, classCode?: string) => Promise<void>;
-  register: (name: string, email: string, password: string, classCode?: string) => Promise<void>;
+  login: (email: string, password: string, role: 'student' | 'professor', userData: Partial<User>) => Promise<void>;
+  register: (email: string, password: string, role: 'student' | 'professor', userData: Partial<User>) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   isProfessor: boolean;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => {},
   register: async () => {},
+  loginWithGoogle: async () => {},
   logout: () => {},
   isLoading: true,
   isProfessor: false,
@@ -42,23 +44,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // Mock login function - in a real app would call an API
-  const login = async (email: string, password: string, classCode?: string) => {
+  const login = async (email: string, password: string, role: 'student' | 'professor', userData: Partial<User>) => {
     try {
       // In a real app, validate with backend
       if (password.length < 6) {
         throw new Error("Invalid credentials");
       }
       
-      // Determine role based on class code
-      const role = classCode ? 'professor' : 'student';
-      
       // Mock user
       const newUser: User = {
         id: Math.random().toString(36).slice(2),
         email,
-        name: email.split('@')[0],
+        name: userData.name || email.split('@')[0],
         role,
-        classCode,
+        ...userData
       };
       
       localStorage.setItem('user', JSON.stringify(newUser));
@@ -69,29 +68,45 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Mock register function
-  const register = async (name: string, email: string, password: string, classCode?: string) => {
+  const register = async (email: string, password: string, role: 'student' | 'professor', userData: Partial<User>) => {
     try {
       // In a real app, would send to backend
       if (password.length < 6) {
         throw new Error("Password must be at least 6 characters");
       }
       
-      // Determine role based on class code
-      const role = classCode ? 'professor' : 'student';
-      
       // Mock user creation
       const newUser: User = {
         id: Math.random().toString(36).slice(2),
         email,
-        name,
+        name: userData.name || '',
         role,
-        classCode,
+        ...userData
       };
       
       localStorage.setItem('user', JSON.stringify(newUser));
       setUser(newUser);
     } catch (error) {
       throw new Error("Registration failed. Please try again.");
+    }
+  };
+
+  // Mock Google sign-in
+  const loginWithGoogle = async () => {
+    try {
+      // In a real app, this would redirect to Google OAuth
+      // For mock purposes, we'll create a dummy Google user
+      const mockGoogleUser: User = {
+        id: Math.random().toString(36).slice(2),
+        email: "user" + Math.floor(Math.random() * 1000) + "@gmail.com",
+        name: "Google User",
+        role: 'student', // Default role, would need UI to select role after Google auth
+      };
+      
+      localStorage.setItem('user', JSON.stringify(mockGoogleUser));
+      setUser(mockGoogleUser);
+    } catch (error) {
+      throw new Error("Google sign in failed. Please try again.");
     }
   };
 
@@ -107,6 +122,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         isAuthenticated: !!user,
         login,
         register,
+        loginWithGoogle,
         logout,
         isLoading,
         isProfessor: user?.role === 'professor' || false

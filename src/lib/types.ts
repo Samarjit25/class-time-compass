@@ -7,6 +7,11 @@ export interface User {
   name: string;
   role: 'student' | 'professor';
   classCode?: string;
+  // New fields for student
+  schoolId?: string;
+  batch?: string;
+  semester?: string;
+  branch?: string;
 }
 
 export interface ClassEntry {
