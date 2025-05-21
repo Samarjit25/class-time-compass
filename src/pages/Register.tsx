@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { BookOpen, School, User, Book, Branch, Code } from 'lucide-react';
+import { BookOpen, School, User, Book, GitBranch, Code } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
@@ -208,7 +208,7 @@ const Register = () => {
                   <div className="space-y-2">
                     <Label htmlFor="branch">Branch</Label>
                     <div className="flex items-center space-x-2">
-                      <Branch className="h-4 w-4 text-muted-foreground" />
+                      <GitBranch className="h-4 w-4 text-muted-foreground" />
                       <Input 
                         id="branch"
                         value={branch} 
@@ -225,7 +225,7 @@ const Register = () => {
                   <div className="space-y-2">
                     <Label htmlFor="branch">Branch</Label>
                     <div className="flex items-center space-x-2">
-                      <Branch className="h-4 w-4 text-muted-foreground" />
+                      <GitBranch className="h-4 w-4 text-muted-foreground" />
                       <Input 
                         id="branch"
                         value={branch} 
