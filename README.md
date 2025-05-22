@@ -6,7 +6,7 @@
 
 ## How can I edit this code?
 
-There are several ways of editing your application. samarjit roy
+There are several ways of editing your application. samarjit roy is good
 
 **Use Lovable**
 
