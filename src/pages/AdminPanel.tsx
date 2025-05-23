@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClassEntry, Day, dayOrder, ClassStatus } from '@/lib/types';
-import { AlertCircle, Check, Clock, Edit, MapPin, Plus, X } from 'lucide-react';
+import { AlertCircle, Check, Clock, Edit, MapPin, Plus, X, Mail } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,7 +55,6 @@ const AdminPanel = () => {
       case 'canceled':
         return <Badge variant="destructive" className="ml-2">Canceled</Badge>;
       case 'rescheduled':
-        // Fixed: Changed warning to outline and added custom styling
         return <Badge variant="outline" className="ml-2 bg-yellow-500 text-white">Rescheduled</Badge>;
       default:
         return <Badge variant="outline" className="ml-2">Scheduled</Badge>;
@@ -120,6 +119,11 @@ const AdminPanel = () => {
                               <h3 className="font-medium text-lg flex items-center">
                                 {cls.subject}
                                 {getStatusBadge(cls.status || 'scheduled')}
+                                {cls.classCode && (
+                                  <Badge variant="outline" className="ml-2">
+                                    <Mail className="h-3 w-3 mr-1" /> Notifications Enabled
+                                  </Badge>
+                                )}
                               </h3>
                               <div className="flex space-x-2">
                                 <AlertDialog>
@@ -140,6 +144,12 @@ const AdminPanel = () => {
                                       <AlertDialogTitle>Confirm Class Status Change</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         Are you sure you want to set {cls.subject} as scheduled?
+                                        {cls.classCode && (
+                                          <p className="mt-2">
+                                            <Mail className="h-4 w-4 inline mr-1" /> 
+                                            An email notification will be sent to all students in class code {cls.classCode}.
+                                          </p>
+                                        )}
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -170,7 +180,13 @@ const AdminPanel = () => {
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Cancel Class</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Are you sure you want to cancel {cls.subject} on {day}? Students will be notified of this change.
+                                        Are you sure you want to cancel {cls.subject} on {day}?
+                                        {cls.classCode && (
+                                          <p className="mt-2">
+                                            <Mail className="h-4 w-4 inline mr-1" /> 
+                                            An email notification will be sent to all students in class code {cls.classCode}.
+                                          </p>
+                                        )}
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

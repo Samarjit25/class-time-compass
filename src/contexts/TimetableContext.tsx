@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ClassEntry, Day, dayOrder, ClassStatus } from '@/lib/types';
 import { useAuth } from './AuthContext';
+import { useToast } from "@/components/ui/use-toast";
 
 interface TimetableContextType {
   classes: ClassEntry[];
@@ -32,6 +33,7 @@ interface TimetableProviderProps {
 export const TimetableProvider = ({ children }: TimetableProviderProps) => {
   const [classes, setClasses] = useState<ClassEntry[]>([]);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Load all class data regardless of user type
@@ -91,7 +93,56 @@ export const TimetableProvider = ({ children }: TimetableProviderProps) => {
   };
   
   const updateClassStatus = (id: string, status: ClassStatus) => {
+    const classToUpdate = classes.find(c => c.id === id);
+    if (!classToUpdate) return;
+
     updateClass(id, { status });
+    
+    // If the class has a class code, notify students
+    if (classToUpdate.classCode && user?.role === 'professor') {
+      // In a real app, this would send an email to all students with this class code
+      // For now, we'll just show a toast notification
+      sendEmailNotification(classToUpdate, status);
+    }
+  };
+  
+  // Mock email notification function
+  const sendEmailNotification = (classEntry: ClassEntry, status: ClassStatus) => {
+    // In a real application, this would call a backend API to send emails
+    console.log(`Sending email notifications for ${classEntry.subject} status: ${status}`);
+    
+    // Show a toast notification to simulate email sending
+    const statusMessage = status === 'canceled' 
+      ? `The class ${classEntry.subject} has been canceled` 
+      : status === 'scheduled' 
+        ? `The class ${classEntry.subject} is confirmed to take place as scheduled`
+        : `The class ${classEntry.subject} has been rescheduled`;
+    
+    toast({
+      title: "Email Notification Sent",
+      description: `Notification: "${statusMessage}" has been sent to all students in class code ${classEntry.classCode}`,
+    });
+    
+    // Additional information would be included in a real email:
+    const emailContent = {
+      subject: `Class Update: ${classEntry.subject}`,
+      body: `
+        Dear Student,
+        
+        ${statusMessage} for ${classEntry.day} at ${classEntry.startTime}.
+        
+        ${status === 'canceled' 
+          ? 'Please adjust your schedule accordingly.' 
+          : 'Please ensure you attend the class on time.'}
+        
+        Location: ${classEntry.location || 'TBD'}
+        
+        Regards,
+        Class Time Compass
+      `
+    };
+    
+    console.log('Email content:', emailContent);
   };
 
   return (
